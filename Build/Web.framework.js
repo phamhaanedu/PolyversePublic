@@ -5753,6 +5753,50 @@ async function createWasm() {
           requestOptions.timeout = timeout;
   	}
 
+  function _PolyVerse_InstallTouchAndPointerGuard() {
+      if (typeof window === 'undefined' || typeof document === 'undefined') {
+        return;
+      }
+      if (window.__polyVerseTouchGuardInstalled) {
+        return;
+      }
+      window.__polyVerseTouchGuardInstalled = true;
+  
+      var applyCanvasStyle = function () {
+        var canvas = document.querySelector('canvas');
+        if (canvas) {
+          canvas.style.touchAction = 'none';
+          canvas.style.userSelect = 'none';
+          canvas.style.webkitUserSelect = 'none';
+          canvas.style.webkitTouchCallout = 'none';
+          canvas.addEventListener('contextmenu', function (e) {
+            e.preventDefault();
+          }, false);
+        }
+        if (document.documentElement) {
+          document.documentElement.style.overscrollBehavior = 'none';
+        }
+        if (document.body) {
+          document.body.style.overscrollBehavior = 'none';
+          document.body.style.touchAction = 'none';
+        }
+      };
+  
+      applyCanvasStyle();
+      window.addEventListener('DOMContentLoaded', applyCanvasStyle, false);
+  
+      // Block Safari/Chrome mobile multi-touch page zoom & pull-to-refresh on canvas
+      document.addEventListener('gesturestart', function (e) {
+        e.preventDefault();
+      }, { passive: false });
+  
+      document.addEventListener('touchmove', function (e) {
+        if (e.touches && e.touches.length > 1) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+    }
+
   var ___assert_fail = (condition, filename, line, func) =>
       abort(`Assertion failed: ${UTF8ToString(condition)}, at: ` + [filename ? UTF8ToString(filename) : 'unknown filename', line, func ? UTF8ToString(func) : 'unknown function']);
 
@@ -17718,6 +17762,8 @@ var wasmImports = {
   JS_WebRequest_SetRequestHeader: _JS_WebRequest_SetRequestHeader,
   /** @export */
   JS_WebRequest_SetTimeout: _JS_WebRequest_SetTimeout,
+  /** @export */
+  PolyVerse_InstallTouchAndPointerGuard: _PolyVerse_InstallTouchAndPointerGuard,
   /** @export */
   __assert_fail: ___assert_fail,
   /** @export */
